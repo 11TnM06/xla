@@ -57,7 +57,6 @@ class convertImageMaker:
       data = str(self.box[i][1]) + " " + str(self.box[i][3]) + " " + str(self.box[i][0]) + " " + str(self.box[i][2]) + "\n"
       crop_text.write(data)
       crop_list.append(crop_img)
-      # 자른 이미지를 폴더에 저장
       cv2.imwrite(os.path.join(crop_dir, "crop_" + str(i) + ".jpg"), crop_img)
       img_cut[self.box[i][1]:self.box[i][1] + self.box[i][3], self.box[i][0]:self.box[i][0] + self.box[i][2]] = 0
       img_cut2[self.box[i][1]:self.box[i][1] + self.box[i][3], self.box[i][0]:self.box[i][0] + self.box[i][2]] = 255
@@ -72,7 +71,6 @@ class convertImageMaker:
     img_cut1 = cv2.imread(os.path.join(dir, "cut_image1.jpg"), cv2.IMREAD_COLOR)
     crop_text = open(os.path.join(dir, "crop_location.txt"), 'r')
     lines = crop_text.readlines()
-    # 뒤집기
     if convert_type == 1:
       dirs = os.listdir(dir)
       for item in dirs:
@@ -93,7 +91,6 @@ class convertImageMaker:
       dst2 = cv2.resize(img_cut1, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
       cv2.imwrite(os.path.join("./image/result_images/converted_image.jpg"), dst2)
       pass
-    # 색 반전
     elif convert_type == 2:
       dirs = os.listdir(dir)
       for item in dirs:
@@ -113,23 +110,12 @@ class convertImageMaker:
           crop_location[2]:crop_location[2] + crop_location[3]] = dst
           pass
         pass
-
-      # cv2.imshow("test",img_cut1)
-      # cv2.waitKey()
       dst2 = cv2.resize(img_cut1, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-      # cv2.imshow("test",dst2)
-      # cv2.waitKey()
       cv2.imwrite(os.path.join("./image/result_images/converted_image.jpg"), dst2)
       pass
-
-    # 다른 오브젝트로 대체
     elif convert_type == 3:
       img_ori = cv2.imread(os.path.join("image/result_images/original_image.jpg"), cv2.IMREAD_COLOR)
-      # cv2.imshow("test", img_ori)
-      # cv2.waitKey()
-      # 잘려진 이미지를 가져옴
       img_crop = cv2.imread(os.path.join(dir, "cut_image1.jpg"), cv2.IMREAD_COLOR)
-      # 잘려진 이미지에서 채울 부분의 좌표관련 내용을 읽어옴
       crop_text = open(os.path.join(dir, "crop_location.txt"), 'r')
 
       line_len = 0
@@ -141,47 +127,29 @@ class convertImageMaker:
         lines.append(line1)
         pass
       crop_text.close()
-
-      # 채울 이미지의 리스트를 가져옴
       dir2 = '.image/clean_back'
       print(os.path.join(dir2, "apple.png"))
       img_paste = cv2.imread("./image/clean_back/apple.png", cv2.IMREAD_COLOR)
-      # cv2.imshow("test", img_paste)
-      # cv2.waitKey()
-
       for i in range(0, line_len):
         crop_location = lines[i].split()
         crop_location = list(map(int, crop_location))
-        # 채울 이미지를 채울 부분의 사이즈로 변환함
         img_paste = cv2.resize(img_paste, dsize=(crop_location[3], crop_location[1]),interpolation=cv2.INTER_AREA)
-        # cv2.imshow("test", img_paste)
-        # cv2.waitKey()
-        # cv2.imshow("test", img_ori)
-        # cv2.waitKey()
         y_offset = crop_location[0]
         x_offset = crop_location[2]
         y1, y2 = y_offset, y_offset + img_paste.shape[0]
         x1, x2 = x_offset, x_offset + img_paste.shape[1]
         alpha_s = img_paste[:, :, 2] / 255.0
         alpha_l = 1.0 - alpha_s
-        # 원본 이미지에 채울 이미지를 붙임
         for c in range(0, 3):
           img_ori[y1:y2, x1:x2, c] = (alpha_s * img_paste[:, :, c] + alpha_l * img_ori[y1:y2, x1:x2, c])
           pass
-        # 잘려진 이미지에 채울 이미지를 붙임
-        '''
-        for c in range(0, 3):
-            img_ori[y1:y2, x1:x2, c] = (alpha_s * img_paste[:, :, c] + alpha_l * img_ori[y1:y2, x1:x2, c])
-            pass
-        pass
-        '''
       dst2 = cv2.resize(img_ori, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
       cv2.imwrite(os.path.join("./image/result_images/converted_image.jpg"), dst2)
       pass
 
     # GAN, pix2pix
     elif convert_type == 4:
-      print("이미지합성시작")
+      print("Start GAN")
       pix = pixStart()
       pix.start()
       dir = './pix2pix/datasets/tmp/saved'
@@ -197,25 +165,16 @@ class convertImageMaker:
             continue
           crop_location = lines[item_index].split()
           crop_location = list(map(int, crop_location))
-          # print(crop_location)
-          # print(img_paste.shape)
-          # print(crop_location[0], crop_location[0] + crop_location[1], crop_location[2], crop_location[2] + crop_location[3])
           img_cut1[crop_location[0]:crop_location[0] + crop_location[1],
           crop_location[2]:crop_location[2] + crop_location[3]] = img_paste
           pass
         pass
       dst2 = cv2.resize(img_cut1, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
       cv2.imwrite(os.path.join("./image/result_images/converted_image.jpg"), dst2)
-      print("이미지합성끗")
+      print("Done")
       pass
     # Mix
     elif convert_type == 5:
-      # dir = 'crop/'
-      # img_ori = cv2.imread("original_image.jpg", cv2.IMREAD_COLOR)
-      # img_cut1 = cv2.imread(os.path.join(dir, "cut_image1.jpg"), cv2.IMREAD_COLOR)
-      # crop_text = open(os.path.join(dir, "crop_location.txt"), 'r')
-      # lines = crop_text.readlines()
       pass
 
     pass
-  #

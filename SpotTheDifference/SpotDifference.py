@@ -2,9 +2,9 @@ import cv2
 import imutils
 import numpy as np
 
-img1 = cv2.imread("./images/city1.jpg")
+img1 = cv2.imread("../GameData/image/result_images/original_image.jpg")
 img1 = cv2.resize(img1, (600, 360))
-img2 = cv2.imread("./images/city2.jpg")
+img2 = cv2.imread("../GameData/image/result_images/converted_image.jpg")
 img2 = cv2.resize(img2, (600, 360))
 img_height = img1.shape[0]
 

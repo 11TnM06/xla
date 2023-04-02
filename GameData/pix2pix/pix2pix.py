@@ -24,12 +24,6 @@ import os
 from glob import glob
 import cv2
 
-
-# ! unzip /content/drive/My\ Drive/Colab\ Notebooks/imports/datasets.zip
-# ! unzip datasets.zip
-
-
-# os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 class Pix2Pix():
     def __init__(self):
         # Input shape
@@ -254,7 +248,7 @@ class pixStart():
     def start(self):
         print("ok")
         gan = Pix2Pix()
-        '''트레인시 사용부분 
+        ''' 
         counts = input('Train : 1\nTest  : 2\n : ')
         if (int(counts) == 1):
             gan.train(epochs=25, batch_size=1, sample_interval=50)
@@ -264,8 +258,7 @@ class pixStart():
         dir1 = './image/crop_images/'
         dirs = os.listdir(dir1)
 
-        # 폴더에 있는 자른 이미지 대상으로 가로, 세로 길이를 측정
-        print("캐니엣지변환")
+        print("Resize Crop Images")
         result_dir = '.pix2pix/datasets/tmp/test'
         for item in dirs:
             if os.path.isfile(dir1 + item) and ".jpg" in item and "crop_images" in item:
@@ -277,13 +270,11 @@ class pixStart():
                 img2 = cv2.Canny(img2, 100, 200)
                 cv2.imshow("test",img2)
                 cv2.imwrite((os.path.join(result_dir, "crop_"+str(item_index) + ".jpg")), img2)
-                # 합친 이미지를 저장함
                 pass
             pass
-        print("캐니엣지변환끗")
 
         ## use the trained model to generate data
-        origin_shape = [[0] * 3 for i in range(11)]  # 10행 3열 행렬 초기화
+        origin_shape = [[0] * 3 for i in range(11)]  # init matrix 10*3
         test_model = gan.generator
         test_model.load_weights("./pix2pix/gen_model.h5")
         path = glob("datasets/tmp/test/*")
@@ -291,8 +282,7 @@ class pixStart():
 
         dir='./image/crop_images'
         dirs = os.listdir(dir)
-        # print(dirs)
-        print("pix2pix변환")
+        print("Convert pixel images")
         for item in dirs:
             item_index = item.replace("crop_", "")
             if "location" in item_index or "cut" in item_index:
@@ -308,7 +298,6 @@ class pixStart():
 
             size = (256, 256)
             img_B = np.array(Image.fromarray(img_B).resize(size, Image.BICUBIC))
-            #img_B = cv2.resize(img_B, (256, 256, 3))
             #print(img_B.shape)
             
             m, n, d = img_B.shape
@@ -316,22 +305,16 @@ class pixStart():
 
             img_b = np.array([img_B]) / 127.5 - 1
             fake_A = 0.5 * (test_model.predict(img_b))[0] + 0.5
-            #convert fake_A from astype float64 to uint8
             fake_A = (fake_A * 255).astype(np.uint8)
 
-            # if item_index < 3:
-            #     imageio.imwrite("./pix2pix/datasets/tmp/saved/origin_%d.jpg" % item_index, fake_A)
             # img_show[:, :n, :] = img_B / 255
             img_show[:, n:2 * n, :] = fake_A
-            
-            # scipy.misc.imsave("./datasets/tmp/saved/%d.jpg" % num, img_show)
-            #fake_A = cv2.resize(fake_A, (origin_shape[num][0], origin_shape[num][1], 3))
             fake_A = np.array(Image.fromarray(fake_A).resize((origin_shape[num][1], origin_shape[num][0]), Image.BICUBIC))
             print(fake_A.shape)
             imageio.imwrite("./pix2pix/datasets/tmp/saved/crop_%d.jpg" % item_index, fake_A)
             pass
         pass
-        print("pix2pix변환끗")
+        print("Finish")
         '''
         for img in path:
             img_B = scipy.misc.imread(img, mode='RGB').astype(np.float)
