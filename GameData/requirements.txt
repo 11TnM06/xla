@@ -1,0 +1,9 @@
+opencv-python==4.7.0.72
+scipy==1.7.3
+pillow==9.5.0
+tensorflow==2.11.0
+keras==2.11.0
+numpy==1.21.6
+imageio==2.27.0
+matplotlib
+scikit-image
