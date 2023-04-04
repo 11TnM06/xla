@@ -105,22 +105,29 @@ class convertImageMaker:
       crop_location[2]:crop_location[2] + crop_location[3]] = dst
       pass
     return img_cut1
-  def add_image(self, dir, lines, img_ori, item):
-    if os.path.isfile(os.path.join(dir, item)) and ".jpg" in item:
-      item_index = item.replace(".jpg", "")
-
-      crop_location = lines[item_index].split()
+  def add_image(self, dir_addImage, lines, img_ori, item):
+    if os.path.isfile(os.path.join(dir_addImage, item)) and ".png" in item:
+      item_index = int(item.replace(".png", ""))
+      #print(lines)
+      if item_index - 1 >= len(lines):
+        return img_ori
+      crop_location = lines[item_index - 1].split()
       crop_location = list(map(int, crop_location))
-      item = cv2.resize(item, dsize=(crop_location[3], crop_location[1]),interpolation=cv2.INTER_AREA)
+      img_paste = cv2.imread(os.path.join(dir_addImage, item), cv2.IMREAD_UNCHANGED)
+      #print(os.path.join(dir_addImage, item))
+      img_paste = cv2.resize(img_paste, dsize=(crop_location[3], crop_location[1]),interpolation=cv2.INTER_AREA)
+      
       y_offset = crop_location[0]
       x_offset = crop_location[2]
-      y1, y2 = y_offset, y_offset + item.shape[0]
-      x1, x2 = x_offset, x_offset + item.shape[1]
-      alpha_s = item[:, :, 2] / 255.0
+      y1, y2 = y_offset, y_offset + img_paste.shape[0]
+      x1, x2 = x_offset, x_offset + img_paste.shape[1]
+      alpha_s = img_paste[:, :, 2] / 255.0
       alpha_l = 1.0 - alpha_s
       for c in range(0, 3):
-        img_ori[y1:y2, x1:x2, c] = (alpha_s * item[:, :, c] + alpha_l * img_ori[y1:y2, x1:x2, c])
+        img_ori[y1:y2, x1:x2, c] = (alpha_s * img_paste[:, :, c] + alpha_l * img_ori[y1:y2, x1:x2, c])
         pass
+    # cv2.imshow("ori", img_ori)
+    # cv2.waitKey()
     return img_ori
   
   def do_gan(self, dir, lines, img_cut1, item):
@@ -177,10 +184,9 @@ class convertImageMaker:
     elif convert_type == 3:
       img_ori = cv2.imread(os.path.join("image/result_images/original_image.jpg"), cv2.IMREAD_COLOR)
       dir_addImage = './image/clean_back'
-      dirs_addImage = os.listdir(dir)
-      print(os.path.join(dir, "apple.png"))
-      for item in dirs:
-        img_ori = self.add_image(dir, lines, img_ori, item)
+      dirs_addImage = os.listdir(dir_addImage)
+      for item in dirs_addImage:
+        img_ori = self.add_image(dir_addImage, lines, img_ori, item)
         pass
       self.save_image(img_ori, width_ori, height_ori)
       pass
@@ -221,7 +227,7 @@ class convertImageMaker:
       res = 0
 
       for item_gan in os.listdir(dir_gan):
-        option = random.randint(5, 5)
+        option = random.randint(1, 5)
         #print(item)
         if option == 1:
           #do get_rotation
@@ -237,8 +243,8 @@ class convertImageMaker:
         elif option == 3:
           if res >= len(item_addImage):
             continue
-          img_ori = self.add_image(dir_addImage, lines, img_ori, item_addImage[res])
-          self.save_image(img_ori, width_ori, height_ori)
+          img_cut1 = self.add_image(dir_addImage, lines, img_ori, item_addImage[res])
+
           pass
         elif option == 4:
           #print(item_gan[res])
