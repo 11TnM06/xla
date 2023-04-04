@@ -291,7 +291,6 @@ class pixStart():
                 item_index = int(item_index.replace(".jpg", ""))
             img_B = imageio.imread(os.path.join(dir,item), as_gray=False, pilmode="RGB").astype(np.uint8)
             m, n, d = img_B.shape
-            print(img_B.shape)
 
             origin_shape[num][0] = m
             origin_shape[num][1] = n
@@ -310,7 +309,6 @@ class pixStart():
             # img_show[:, :n, :] = img_B / 255
             img_show[:, n:2 * n, :] = fake_A
             fake_A = np.array(Image.fromarray(fake_A).resize((origin_shape[num][1], origin_shape[num][0]), Image.BICUBIC))
-            print(fake_A.shape)
             imageio.imwrite("./pix2pix/datasets/tmp/saved/crop_%d.jpg" % item_index, fake_A)
             pass
         pass
